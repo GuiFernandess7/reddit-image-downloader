@@ -52,7 +52,7 @@ def upload_images_to_gdrive(upload_dir: Path, uploader: FileUploader):
 
 def main():
     gdrive_auth = GoogleDriveAuth(scopes=["https://www.googleapis.com/auth/drive"])
-    gdrive_auth.authenticate(local=True)
+    gdrive_auth.authenticate(local=False)
     uploader = FileUploader(gdrive_auth)
     uploader.download(
         DB_FILENAME, GDRIVE_FOLDER_ID, str(DB_FILE_PATH)
