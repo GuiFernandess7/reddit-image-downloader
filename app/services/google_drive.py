@@ -62,7 +62,7 @@ class GoogleDriveAuth(GoogleDriveInterface):
                     service_account_file, scopes=self.scopes
                 )
             else:
-                creds = service_account.Credentials.from_service_account_file(
+                creds = service_account.Credentials.from_service_account_info(
                     "service_account.json", scopes=self.scopes
                 )
             self.drive_service = build("drive", "v3", credentials=creds)

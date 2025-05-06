@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "0 4,16 * * *" # 04:00 e 16:00 UTC = 01:00 e 13:00 BRT
 
 jobs:
   build:
