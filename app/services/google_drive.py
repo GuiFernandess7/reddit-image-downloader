@@ -11,6 +11,7 @@ import os
 import io
 import logging
 from abc import ABC, abstractmethod
+import json
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] - [%(levelname)s] - %(message)s"
@@ -62,8 +63,10 @@ class GoogleDriveAuth(GoogleDriveInterface):
                     service_account_file, scopes=self.scopes
                 )
             else:
+                with open("service_account.json") as f:
+                    info = json.load(f)
                 creds = service_account.Credentials.from_service_account_info(
-                    "service_account.json", scopes=self.scopes
+                    info, scopes=self.scopes
                 )
             self.drive_service = build("drive", "v3", credentials=creds)
             logger.info("Google Drive service authenticated successfully.")
@@ -114,9 +117,7 @@ class FileUploader:
 
             if items:
                 file_id = items[0]["id"]
-                media = MediaFileUpload(
-                    filepath, mimetype="application/octet-stream"
-                )
+                media = MediaFileUpload(filepath, mimetype="application/octet-stream")
 
                 file = (
                     self.service.files()
@@ -125,9 +126,7 @@ class FileUploader:
                 )
                 logger.info(f'File {filename} updated with ID: {file.get("id")}')
             else:
-                media = MediaFileUpload(
-                    filepath, mimetype="application/octet-stream"
-                )
+                media = MediaFileUpload(filepath, mimetype="application/octet-stream")
 
                 file_metadata = {
                     "name": filename,
