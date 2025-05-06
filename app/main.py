@@ -11,12 +11,15 @@ from app.settings.creds import GDRIVE_FOLDER_ID, IMAGES_GDRIVE_FOLDER_ID
 
 load_dotenv(override=True)
 
-logging.basicConfig(level=logging.INFO, format="[%(asctime)s] - [%(levelname)s] - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="[%(asctime)s] - [%(levelname)s] - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 CURRENT_DIR = Path(__file__).resolve().parent
 DB_FILENAME = "user_images.db"
 DB_FILE_PATH = CURRENT_DIR / "data" / DB_FILENAME
+
 
 def download_images(image_urls, download_dir: Path):
     """Baixa imagens para o diretório especificado."""
@@ -46,7 +49,15 @@ def upload_images_to_gdrive(upload_dir: Path, uploader: FileUploader):
             uploader.upload(str(file_path), filename, IMAGES_GDRIVE_FOLDER_ID)
             logger.info(f"Arquivo enviado para o Google Drive: {file_path}")
 
+
 def main():
+    gdrive_auth = GoogleDriveAuth(scopes=["https://www.googleapis.com/auth/drive"])
+    gdrive_auth.authenticate(local=True)
+    uploader = FileUploader(gdrive_auth)
+    uploader.download(
+        DB_FILENAME, GDRIVE_FOLDER_ID, str(DB_FILE_PATH)
+    )  # <-- Download the database file
+
     with DBConnectionHandler() as session:
         repo = UserImageRepository(session)
         image_urls = repo.get_checked_image_urls()
@@ -55,12 +66,6 @@ def main():
         if not image_urls:
             logger.info("Nenhuma imagem para processar.")
             return
-
-        gdrive_auth = GoogleDriveAuth(scopes=["https://www.googleapis.com/auth/drive"])
-        gdrive_auth.authenticate(local=True)
-        uploader = FileUploader(gdrive_auth)
-
-        uploader.download(DB_FILENAME, GDRIVE_FOLDER_ID, str(DB_FILE_PATH)) # <-- Download the database file
 
         TMP_DIR = CURRENT_DIR / "tmp"
         TMP_DIR.mkdir(exist_ok=True)
@@ -81,9 +86,12 @@ def main():
                 if file.is_file():
                     file.unlink()
 
-        uploader.upload(str(DB_FILE_PATH), DB_FILENAME, GDRIVE_FOLDER_ID) # --> Upload the database file
+        uploader.upload(
+            str(DB_FILE_PATH), DB_FILENAME, GDRIVE_FOLDER_ID
+        )  # --> Upload the database file
 
     logger.info("Processo concluído com sucesso.")
+
 
 if __name__ == "__main__":
     main()
